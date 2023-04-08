@@ -1,4 +1,12 @@
 <script setup lang="ts">
+type keyComponent = 'type' | 'label' | 'component' | 'props'
+interface IComponent {
+  type: string
+  label: string
+  component: string
+  props?: any
+}
+//data
 const componentList = [
   {
     type: 'elementParagraph',
@@ -11,16 +19,22 @@ const componentList = [
     component: 'Button'
   }
 ]
-const components = ref([]) as any
+const components = ref<Array<IComponent>>([])
+const componentActive = ref<IComponent | null>()
+const componentDragging = ref()
+const mousePosition = ref<String | null>()
+//end data
 
 //method
-const dragStart = (event: DragEvent, index: number, data: any) => {
-  Object.keys(data).map((el) => {
-    event.dataTransfer?.setData(el, data[el])
+const dragStart = (event: DragEvent, data: IComponent) => {
+  if (!data) return
+  Object.keys(data).map((el: string) => {
+    event.dataTransfer?.setData(el, data[el as keyComponent])
   })
+  componentDragging.value = data
 }
-const drop = (event:DragEvent, index: number)=>{
-  console.log('drop');
+const drop = (event: DragEvent, index: number) => {
+  console.log('drop')
 }
 const addComponent = (event: DragEvent) => {
   const type = event.dataTransfer?.getData('type')
@@ -32,8 +46,18 @@ const addComponent = (event: DragEvent) => {
     component,
     props: {}
   }
-  components.value.push(componentResult)
+  components?.value.push(componentResult as IComponent)
+  componentDragging.value = null
 }
+//end method
+
+onMounted(() => {
+  document.onmousemove = handleMouseMove
+  function handleMouseMove(event: MouseEvent) {
+    event = event || window.event
+    mousePosition.value = `(${event.pageX}, ${event.pageY})`
+  }
+})
 </script>
 
 <template>
@@ -47,25 +71,29 @@ const addComponent = (event: DragEvent) => {
     </div>
     <div class="component-builder">
       <div class="component-list">
-        <div v-for="(component, index) in componentList" :draggable="true" :key="index"
-          @dragstart="dragStart($event, index, component)" @dragover.prevent class="component">
+        <div
+          v-for="(component, index) in componentList"
+          :draggable="true"
+          :key="index"
+          @dragstart="dragStart($event, component)"
+          @dragover.prevent
+          class="component">
           <div class="example"></div>
           {{ component.label }}
         </div>
       </div>
-      <div
-        class="component-attribute"
-        @dragover.prevent
-        @drop="addComponent($event)"
-      >
-        <p>Mouse:</p>
-        <p>Dragging:</p>
-        <p>Instance:</p>
-        <p>Config:</p>
+      <div class="component-attribute" @dragover.prevent @drop="addComponent($event)">
+        <p>Mouse: {{ mousePosition }}</p>
+        <p>Dragging: {{ componentDragging?.label }}</p>
+        <p>Instance:{{ components?.length }}</p>
+        <p>Config:{{ componentActive }}</p>
       </div>
 
       <div class="component-view">
-        <div v-for="(component, index) in components" :key="index">
+        <div
+          @click="componentActive = component"
+          v-for="(component, index) in components"
+          :key="index">
           {{ component.label }}
         </div>
         <!-- handle show component -->
@@ -101,7 +129,7 @@ const addComponent = (event: DragEvent) => {
   border-right: 1px solid #ccc;
 }
 
-.component-list>.component {
+.component-list > .component {
   margin-bottom: 5px;
   padding: 5px;
   cursor: move;
@@ -111,7 +139,7 @@ const addComponent = (event: DragEvent) => {
   align-items: center;
 }
 
-.component-list>.component:hover {
+.component-list > .component:hover {
   background-color: #fafafa;
   overflow: 0.3;
 }
@@ -127,14 +155,14 @@ const addComponent = (event: DragEvent) => {
   padding: 10px 8px;
   display: flex;
   flex-direction: column;
-  flex: 1
+  flex: 1;
 }
-.component-view{
+.component-view {
   display: flex;
   flex-direction: column;
-  gap:10px;
-  flex:1;
+  gap: 10px;
+  flex: 1;
   padding: 10px;
-  max-width: 500px
+  max-width: 500px;
 }
 </style>
