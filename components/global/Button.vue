@@ -8,15 +8,20 @@ const props = withDefaults(defineProps<IProps>(), {
 })
 
 const onClick = () => {
+  console.log('click button')
   alert(props?.message)
 }
 </script>
 <template>
-  <div>
-    <button @click="message && onClick">
+  <div class="button-element">
+    <button @click="message&& $route.name !=='admin' && onClick()">
       {{ text }}
     </button>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.button-element button{
+  cursor: pointer;
+}
+</style>

@@ -11,18 +11,19 @@ const componentList = [
   {
     type: 'elementParagraph',
     label: 'Paragraph',
-    component: 'Paragraph'
+    component: 'Paragraph',
   },
   {
     type: 'elementButton',
     label: 'Button',
-    component: 'Button'
-  }
+    component: 'Button',
+  },
 ]
 const components = ref<Array<IComponent>>([])
 const componentActive = ref<IComponent | null>()
 const componentDragging = ref()
 const mousePosition = ref<String | null>()
+const router = useRouter()
 //end data
 
 //method
@@ -44,10 +45,22 @@ const addComponent = (event: DragEvent) => {
     type,
     label,
     component,
-    props: {}
+    props: {},
   }
   components?.value.push(componentResult as IComponent)
   componentDragging.value = null
+}
+const onView = () => {
+  console.log('components.value :>> ', components.value)
+  if (!components.value?.length) {
+    alert('Nothing to view! Please add new component')
+    return
+  }
+  if (process.client) {
+    sessionStorage.setItem('layoutBuilder', JSON.stringify(components.value))
+    const routeConsumer = router.resolve({ path: '/consumer' })
+    window.open(routeConsumer.href)
+  }
 }
 //end method
 
@@ -67,7 +80,7 @@ onMounted(() => {
       <button>Save</button>
       <button>Undo</button>
       <button>Redo</button>
-      <button>View</button>
+      <button @click="onView">View</button>
     </div>
     <div class="component-builder">
       <div class="component-list">
@@ -77,7 +90,8 @@ onMounted(() => {
           :key="index"
           @dragstart="dragStart($event, component)"
           @dragover.prevent
-          class="component">
+          class="component"
+        >
           <div class="example"></div>
           {{ component.label }}
         </div>
@@ -92,12 +106,13 @@ onMounted(() => {
       <div class="component-view">
         <component
           v-for="(component, index) in components"
+          @click.prevent.stop="componentActive = component"
           :key="index"
           :is="resolveComponent(component.component)"
           v-bind="component.props"
-          @click="componentActive = component">
-          {{ component?.props?.text ? component?.props.text : component.label }}</component
         >
+          {{ component?.props?.text ? component?.props.text : component.label }}
+        </component>
       </div>
     </div>
     <div class="component-form">
@@ -177,6 +192,8 @@ onMounted(() => {
   flex: 1;
   padding: 10px;
   max-width: 500px;
+  align-items: center;
+  cursor: pointer;
 }
 .component-form {
   border: 1px solid #ccc;
