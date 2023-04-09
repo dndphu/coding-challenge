@@ -90,13 +90,26 @@ onMounted(() => {
       </div>
 
       <div class="component-view">
-        <div
-          @click="componentActive = component"
+        <component
           v-for="(component, index) in components"
-          :key="index">
-          {{ component.label }}
-        </div>
-        <!-- handle show component -->
+          :key="index"
+          :is="resolveComponent(component.component)"
+          v-bind="component.props"
+          @click="componentActive = component">
+          {{ component?.props?.text ? component?.props.text : component.label }}</component
+        >
+      </div>
+    </div>
+    <div class="component-form">
+      <div class="container-item" v-if="componentActive?.type == 'elementButton'">
+        <label for="">Button Text</label>
+        <input type="text" v-model="componentActive.props.text" />
+        <label for="">Alert Message</label>
+        <input type="text" v-model="componentActive.props.message" />
+      </div>
+      <div class="container-item" v-if="componentActive?.type == 'elementParagraph'">
+        <label for="">Paragraph Text</label>
+        <input type="text" v-model="componentActive.props.text" />
       </div>
     </div>
   </div>
@@ -164,5 +177,19 @@ onMounted(() => {
   flex: 1;
   padding: 10px;
   max-width: 500px;
+}
+.component-form {
+  border: 1px solid #ccc;
+  border-top: none;
+  padding: 20px;
+}
+.container-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.container-item input {
+  min-width: 300px;
+  width: fit-content;
 }
 </style>
