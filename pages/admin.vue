@@ -27,6 +27,8 @@ const mousePosition = ref<String | null>()
 
 const actions = ref([]) as any
 const actionIndex = ref(0)
+
+const isShowImport = ref(false)
 //end data
 
 //method
@@ -54,6 +56,9 @@ const addComponent = (event: DragEvent) => {
   componentDragging.value = null
   addNewAction()
 }
+const onSave = () => {
+  alert('coming soon ^^!')
+}
 const onView = () => {
   if (!components.value?.length) {
     alert('Nothing to view! Please add new component')
@@ -68,7 +73,7 @@ const onView = () => {
 function addNewAction() {
   // actions.value.splice(actionIndex.value + 1, actions.value.length - actionIndex.value - 1)
   actions.value.push([...components.value])
-  actionIndex.value = actions.value.length -1
+  actionIndex.value = actions.value.length - 1
 }
 const undo = () => {
   if (actionIndex.value < 1) {
@@ -82,13 +87,41 @@ const undo = () => {
     components.value = [...actions.value[actionIndex.value]]
     // actions.value.pop()
   }
-
 }
 const redo = () => {
-  if (actionIndex.value < actions.value.length -1 ) {
+  if (actionIndex.value < actions.value.length - 1) {
     actionIndex.value++
     components.value = [...actions.value[actionIndex.value]]
   }
+}
+const onExport = () => {
+  if (!components.value?.length) {
+    alert('Nothing to Export! Please add new component')
+    return
+  }
+  const jsonString = JSON.stringify(components.value)
+  const blob = new Blob([jsonString], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.download = 'data.json'
+  link.href = url
+  link.click()
+}
+// const onImport = () => {}
+const handleFileUpload = (e :any) => {
+  const file = e.target.files[0]
+  if (!file) {
+    return
+  }
+  const reader = new FileReader()
+  reader.onload = () => {
+    const json: any = reader.result
+    const data = JSON.parse(json)
+    console.log(data)
+    components.value = data
+  }
+
+  reader.readAsText(file)
 }
 //end method
 
@@ -108,12 +141,18 @@ onMounted(() => {
   <div class="admin-page">
     <h1>Admin page</h1>
     <div class="control">
-      <button>Save</button>
+      <button @click="onSave">Save</button>
       <button :disabled="!actions.length" @click="undo">Undo</button>
-      <button :disabled="!actions.length || actionIndex === actions?.length -1" @click="redo">Redo</button>
+      <button :disabled="!actions.length || actionIndex === actions?.length - 1" @click="redo">
+        Redo
+      </button>
+      <button @click="onExport">Export</button>
+      <button @click="isShowImport = true">Import</button>
       <button @click="onView">View</button>
     </div>
-
+    <div v-if="isShowImport" class="container-import">
+      <input type="file" @change="handleFileUpload" />
+    </div>
     <div class="component-builder">
       <div class="component-list">
         <div
@@ -175,7 +214,11 @@ onMounted(() => {
   gap: 10px;
   padding: 8px;
 }
-
+.container-import{
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-bottom: none;
+}
 .component-builder {
   display: flex;
   flex-direction: row;
