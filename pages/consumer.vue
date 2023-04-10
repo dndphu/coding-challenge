@@ -1,5 +1,8 @@
 <script setup lang="ts">
 const components = ref()
+useHead({
+  title: 'Nuxt - Consumer'
+})
 if (process.client) {
   components.value = JSON.parse(sessionStorage.getItem('layoutBuilder') ?? '')
 }

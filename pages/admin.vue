@@ -7,6 +7,7 @@ interface IComponent {
   props?: any
 }
 //data
+const router = useRouter()
 const componentList = [
   {
     type: 'elementParagraph',
@@ -23,7 +24,9 @@ const components = ref<Array<IComponent>>([])
 const componentActive = ref<IComponent | null>()
 const componentDragging = ref()
 const mousePosition = ref<String | null>()
-const router = useRouter()
+
+const actions = ref([]) as any
+const actionIndex = ref(0)
 //end data
 
 //method
@@ -49,9 +52,9 @@ const addComponent = (event: DragEvent) => {
   }
   components?.value.push(componentResult as IComponent)
   componentDragging.value = null
+  addNewAction()
 }
 const onView = () => {
-  console.log('components.value :>> ', components.value)
   if (!components.value?.length) {
     alert('Nothing to view! Please add new component')
     return
@@ -62,8 +65,36 @@ const onView = () => {
     window.open(routeConsumer.href)
   }
 }
+function addNewAction() {
+  // actions.value.splice(actionIndex.value + 1, actions.value.length - actionIndex.value - 1)
+  actions.value.push([...components.value])
+  actionIndex.value = actions.value.length -1
+}
+const undo = () => {
+  if (actionIndex.value < 1) {
+    components.value = []
+    actions.value = []
+    //clear all
+    actionIndex.value = 0
+    return
+  } else {
+    actionIndex.value--
+    components.value = [...actions.value[actionIndex.value]]
+    // actions.value.pop()
+  }
+
+}
+const redo = () => {
+  if (actionIndex.value < actions.value.length -1 ) {
+    actionIndex.value++
+    components.value = [...actions.value[actionIndex.value]]
+  }
+}
 //end method
 
+//watch
+
+//end watch
 onMounted(() => {
   document.onmousemove = handleMouseMove
   function handleMouseMove(event: MouseEvent) {
@@ -78,10 +109,11 @@ onMounted(() => {
     <h1>Admin page</h1>
     <div class="control">
       <button>Save</button>
-      <button>Undo</button>
-      <button>Redo</button>
+      <button :disabled="!actions.length" @click="undo">Undo</button>
+      <button :disabled="!actions.length || actionIndex === actions?.length -1" @click="redo">Redo</button>
       <button @click="onView">View</button>
     </div>
+
     <div class="component-builder">
       <div class="component-list">
         <div
@@ -111,7 +143,7 @@ onMounted(() => {
           :is="resolveComponent(component.component)"
           v-bind="component.props"
         >
-          {{ component?.props?.text ? component?.props.text : component.label }}
+          {{ component?.props?.text ? component?.props.text : component.label }} {{ index }}
         </component>
       </div>
     </div>
