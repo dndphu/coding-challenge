@@ -40,7 +40,7 @@ const dragStart = (event: DragEvent, data: IComponent) => {
   componentDragging.value = data
 }
 const drop = (event: DragEvent, index: number) => {
-  console.log('drop')
+  // console.log('drop')
 }
 const addComponent = (event: DragEvent) => {
   const type = event.dataTransfer?.getData('type')
@@ -117,7 +117,6 @@ const handleFileUpload = (e :any) => {
   reader.onload = () => {
     const json: any = reader.result
     const data = JSON.parse(json)
-    console.log(data)
     components.value = data
   }
 

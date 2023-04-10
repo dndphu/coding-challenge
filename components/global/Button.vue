@@ -8,7 +8,6 @@ const props = withDefaults(defineProps<IProps>(), {
 })
 
 const onClick = () => {
-  console.log('click button')
   alert(props?.message)
 }
 </script>
