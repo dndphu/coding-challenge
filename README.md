@@ -43,4 +43,4 @@ Check out the [deployment documentation](https://nuxt.com/docs/getting-started/d
 # coding-challenge
 ## Demo
 
->https://codding-challenge.netlify.app/
+>https://coding-challenge-job.vercel.app/
